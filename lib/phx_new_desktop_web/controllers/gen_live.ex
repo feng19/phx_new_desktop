@@ -145,7 +145,7 @@ defmodule PhxNewDesktopWeb.GenLive do
       reply = generate(socket.assigns, dir)
 
       result = """
-      cd #{app_dir}
+      cd #{dir}
       #{reply.cmd}
 
       #{reply.result}
@@ -247,9 +247,11 @@ defmodule PhxNewDesktopWeb.GenLive do
         end
       end)
 
-    cmd = Enum.join(["mix", "phx.new", app, "--verbose" | args], " ")
+    args = ["phx.new", app, "--verbose" | args]
+
+    cmd = Enum.join(["mix" | args], " ")
     Logger.info("exec cmd: #{cmd}")
-    {result, exit_status} = System.cmd("mix", ["phx.new", app | args], cd: dir, env: exec_env())
+    {result, exit_status} = System.cmd("mix", args, cd: dir, env: exec_env())
     %{cmd: cmd, result: result, exit_status: exit_status}
   end
 

@@ -10,6 +10,11 @@ fn greet(name: &str) -> String {
 }
 
 fn main() {
+    if let Err(e) = fix_path_env::fix() {
+        println!("{}", e);
+    } else {
+        println!("PATH: {}", std::env::var("PATH").unwrap());
+    }
     tauri::Builder::default()
         .setup(|_app| {
             println!("phoenix server starting...");
