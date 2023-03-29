@@ -67,7 +67,7 @@ defmodule PhxNewDesktopWeb.GenLive do
     # check elixir
     # check mix
     # check phx_new
-    socket = assign(socket, @default)
+    socket = assign(socket, @default) |> stream(:results, [], dom_id: &dom_id/1)
     {:ok, socket}
   end
 
@@ -142,21 +142,21 @@ defmodule PhxNewDesktopWeb.GenLive do
       socket =
         socket
         |> assign(result: "")
-        |> stream(:results, [result], dom_id: &dom_id/1)
+        |> stream_insert(:results, result)
         |> push_event("exec_done", %{exit_status: 1})
 
       {:reply, %{cmd: ""}, socket}
     else
       {task, reply} = generate(socket.assigns, dir)
 
-      result = """
-      cd #{dir}
-      #{reply.cmd}
-
-      """
-
       socket =
-        socket |> assign(task: task, result: "") |> stream(:results, [result], dom_id: &dom_id/1)
+        socket
+        |> assign(task: task, topic: reply.topic, result: "")
+        |> stream_insert(:results, """
+        cd #{dir}
+        #{reply.cmd}
+
+        """)
 
       {:reply, reply, socket}
     end
@@ -288,8 +288,19 @@ defmodule PhxNewDesktopWeb.GenLive do
   end
 
   def await_task(socket) do
-    {_result, exit_status} = Task.await(socket.assigns.task)
-    {:noreply, push_event(socket, "exec_done", %{exit_status: exit_status})}
+    socket =
+      if task = socket.assigns.task do
+        {_result, exit_status} = Task.await(task)
+        Phoenix.PubSub.unsubscribe(PhxNewDesktop.PubSub, socket.assigns.topic)
+
+        socket
+        |> assign(task: nil, topic: nil)
+        |> push_event("exec_done", %{exit_status: exit_status})
+      else
+        socket
+      end
+
+    {:noreply, socket}
   end
 
   defp exec_env do
