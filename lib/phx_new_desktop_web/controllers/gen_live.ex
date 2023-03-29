@@ -134,26 +134,50 @@ defmodule PhxNewDesktopWeb.GenLive do
     app_dir = Path.join([dir, socket.assigns.app])
 
     if File.dir?(app_dir) do
-      reply = %{
-        result:
-          "The directory #{dir} already exists. Please select another directory for installation.",
-        exit_status: 1
-      }
+      result = """
+      The directory #{app_dir} already exists.
+      Please select another directory for installation.
+      """
 
-      {:reply, reply, socket}
+      socket =
+        socket
+        |> assign(result: "")
+        |> stream(:results, [result], dom_id: &dom_id/1)
+        |> push_event("exec_done", %{exit_status: 1})
+
+      {:reply, %{cmd: ""}, socket}
     else
-      reply = generate(socket.assigns, dir)
+      {task, reply} = generate(socket.assigns, dir)
 
       result = """
       cd #{dir}
       #{reply.cmd}
 
-      #{reply.result}
       """
 
-      socket = assign(socket, :result, {:safe, result})
+      socket =
+        socket |> assign(task: task, result: "") |> stream(:results, [result], dom_id: &dom_id/1)
+
       {:reply, reply, socket}
     end
+  end
+
+  @impl true
+  def handle_info({:io_stream, :done}, socket) do
+    await_task(socket)
+  end
+
+  def handle_info({:io_stream, :halt}, socket) do
+    await_task(socket)
+  end
+
+  def handle_info({:io_stream, msg}, socket) do
+    {:noreply, stream_insert(socket, :results, msg)}
+  end
+
+  def handle_info(info, socket) do
+    Logger.error("handle unknown info: #{inspect(info)}")
+    {:noreply, socket}
   end
 
   defp check_app_name(name) do
@@ -248,11 +272,24 @@ defmodule PhxNewDesktopWeb.GenLive do
       end)
 
     args = ["phx.new", app, "--verbose" | args]
-
     cmd = Enum.join(["mix" | args], " ")
-    Logger.info("exec cmd: #{cmd}")
-    {result, exit_status} = System.cmd("mix", args, cd: dir, env: exec_env())
-    %{cmd: cmd, result: result, exit_status: exit_status}
+
+    topic = "t:#{inspect(self())}"
+    Phoenix.PubSub.subscribe(PhxNewDesktop.PubSub, topic)
+    io = %PhxNewDesktop.TopicStream{topic: topic}
+
+    task =
+      Task.async(fn ->
+        Logger.info("exec cmd: #{cmd}")
+        System.cmd("mix", args, cd: dir, env: exec_env(), into: io)
+      end)
+
+    {task, %{cmd: cmd, topic: topic}}
+  end
+
+  def await_task(socket) do
+    {_result, exit_status} = Task.await(socket.assigns.task)
+    {:noreply, push_event(socket, "exec_done", %{exit_status: exit_status})}
   end
 
   defp exec_env do
@@ -268,5 +305,9 @@ defmodule PhxNewDesktopWeb.GenLive do
     else
       []
     end
+  end
+
+  defp dom_id(_) do
+    System.unique_integer() |> to_string()
   end
 end

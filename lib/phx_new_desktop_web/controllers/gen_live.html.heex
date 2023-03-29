@@ -45,8 +45,10 @@
     </div>
   </div>
 
-  <div id="result" :if={@result} class="bg-white bg-opacity-10 absolute inset-0 w-3/4 h-4/5 m-auto rounded shadow-sm">
-    <pre class="h-full p-2 text-sm font-semibold font-mono tracking-tighter overflow-y-auto select-all"><%= @result %></pre>
+  <div id="result_parent" :if={@result} class="bg-white bg-opacity-10 absolute inset-0 w-3/4 h-4/5 m-auto rounded shadow-sm">
+    <div id="results" class="h-full p-2 text-sm font-semibold font-mono tracking-tighter overflow-y-auto" phx-update="stream">
+      <pre class="select-all" id={id} :for={{id, result} <- @streams.results}><%= {:safe, result} %></pre>
+    </div>
   </div>
 </div>
 

@@ -2,6 +2,7 @@ const Generate = {
   mounted() {
     let hook = this
     this.el.addEventListener("click", _info => select_dir(hook))
+    this.handleEvent("exec_done", alert_result)
   }
 };
 
@@ -17,11 +18,16 @@ async function select_dir(hook) {
 
   console.log("select dir: ", selected)
   selected && hook.pushEvent("generate", {dir: selected}, function(resp){
-    if(resp.exit_status == 0) {
-      console.log(resp.result)
-      alert("Generate Success!")
-    }
+    console.log(resp.cmd)
   })
+}
+
+function alert_result({exit_status}) {
+  if(exit_status == 0) {
+    alert("Generate Success!")
+  } else {
+    alert("Generate failed!")
+  }
 }
 
 export default Generate;
