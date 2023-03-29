@@ -1,0 +1,35 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+/* This file is for your main application CSS */
+
+/* For Firefox Browser */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #000 #fff;
+}
+
+/* For Chrome, EDGE, Opera, Others */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #fff;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #000;
+}
+
+.btn {
+  @apply flex flex-col items-center justify-center gap-2 px-6 py-3 w-full rounded-2xl shadow-sm;
+  @apply bg-zinc-50 text-zinc-900 font-semibold leading-6 select-none cursor-pointer;
+  @apply transition hover:bg-zinc-100 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:text-gray-400;
+}
+
+.btn-checked {
+  @apply border-blue-400 border-2;
+}
