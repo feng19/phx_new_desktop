@@ -1,0 +1,25 @@
+#!/bin/sh
+cd -P -- "$(dirname -- "$0")"
+
+echo "starting..."
+
+if [ -d dist ]
+then
+    # dev
+    if [ -z $TAURI_SKIP_DEVSERVER_CHECK ]
+    then
+        echo "start server skiped!"
+        exit 0 # for use dev server
+    else
+        cd dist/phx_new_desktop/bin
+    fi
+else
+    cd ../Resources/dist/phx_new_desktop/bin
+fi
+
+echo "pwd: $(pwd)"
+
+# osascript -e "display notification \"$(pwd)\" with title \"exr\""
+
+export SECRET_KEY_BASE=weHV1UpiJaKsUbcnAA3NRHAZOHl09/XimOyc/r6DIjs7vq6GxZQ3/JHzst19ZQtq
+PHX_SERVER=true exec ./phx_new_desktop start
