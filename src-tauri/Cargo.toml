@@ -13,9 +13,13 @@ edition = "2021"
 tauri-build = { version = "1.2", features = [] }
 
 [dependencies]
-tauri = { version = "1.2", features = ["api-all"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+
+[dependencies.tauri]
+git = "https://github.com/tauri-apps/tauri"
+branch = "dev"
+features = ["api-all"]
 
 [dependencies.fix-path-env]
 git = "https://github.com/tauri-apps/fix-path-env-rs"

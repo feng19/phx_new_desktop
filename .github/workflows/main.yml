@@ -5,10 +5,11 @@ on:
     tags:
       - v*
 
+permissions:
+  contents: write
+
 jobs:
   create-release:
-    permissions:
-      contents: write
     runs-on: ubuntu-20.04
     outputs:
       release_id: ${{ steps.create-release.outputs.result }}
@@ -33,8 +34,6 @@ jobs:
 
   build-tauri:
     needs: create-release
-    permissions:
-      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -47,6 +46,18 @@ jobs:
         with:
           otp-version: '25.3'
           elixir-version: '1.14.3'
+      - name: Restore deps and _build
+        uses: actions/cache@v2
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+      - name: Restore rust target
+        uses: actions/cache@v2
+        with:
+          path: src-tauri/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles(format('{0}{1}', github.workspace, '/src-tauri/Cargo.lock')) }}
       - run: mix setup
       - run: mix assets.deploy
       - run: mix release
@@ -63,11 +74,44 @@ jobs:
         with:
           releaseId: ${{ needs.create-release.outputs.release_id }}
 
+  macos:
+    needs: create-release
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Homebrew packages
+        run: brew install elixir zstd
+      - name: Restore deps and _build
+        uses: actions/cache@v2
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+      - name: Restore rust target
+        uses: actions/cache@v2
+        with:
+          path: src-tauri/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles(format('{0}{1}', github.workspace, '/src-tauri/Cargo.lock')) }}
+      - run: mix local.hex --force
+      - run: mix local.rebar --force
+      - run: mix setup
+      - run: mix assets.deploy
+      - run: mix release
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+      - uses: tauri-apps/tauri-action@v0.3.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          releaseId: ${{ needs.create-release.outputs.release_id }}
+
   publish-release:
     permissions:
       contents: write
     runs-on: ubuntu-20.04
-    needs: [create-release, build-tauri]
+    needs: [create-release, build-tauri, macos]
 
     steps:
       - name: publish release
