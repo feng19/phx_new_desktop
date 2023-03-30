@@ -68,7 +68,7 @@ jobs:
 #        run: |
 #          sudo apt-get update
 #          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
-#      - uses: tauri-apps/tauri-action@v0.3.1
+#      - uses: tauri-apps/tauri-action@dev
 #        env:
 #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #        with:
@@ -80,8 +80,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Install Homebrew packages
-        run: brew install elixir zstd
+      - uses: asdf-vm/actions/install@v2
+        env:
+          KERL_CONFIGURE_OPTIONS: --disable-dynamic-ssl-lib
       - name: Restore deps and _build
         uses: actions/cache@v3
         with:
@@ -101,7 +102,7 @@ jobs:
       - run: mix release
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
-      - uses: tauri-apps/tauri-action@v0.3.1
+      - uses: tauri-apps/tauri-action@dev
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
