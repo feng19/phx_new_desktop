@@ -1,4 +1,4 @@
-# phx.new Desktop
+# phx.new desktop
 
 To start your Phoenix server:
 

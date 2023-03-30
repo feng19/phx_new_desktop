@@ -32,47 +32,47 @@ jobs:
             })
             return data.id
 
-  build-tauri:
-    needs: create-release
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [ubuntu-20.04]
-
-    runs-on: ${{ matrix.platform }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: erlef/setup-beam@v1
-        with:
-          otp-version: '25.3'
-          elixir-version: '1.14.3'
-      - name: Restore deps and _build
-        uses: actions/cache@v2
-        with:
-          path: |
-            deps
-            _build
-          key: ${{ runner.os }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
-      - name: Restore rust target
-        uses: actions/cache@v2
-        with:
-          path: src-tauri/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles(format('{0}{1}', github.workspace, '/src-tauri/Cargo.lock')) }}
-      - run: mix setup
-      - run: mix assets.deploy
-      - run: mix release
-      - name: install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-      - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-20.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
-      - uses: tauri-apps/tauri-action@v0.3.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          releaseId: ${{ needs.create-release.outputs.release_id }}
+#  build-tauri:
+#    needs: create-release
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        platform: [ubuntu-20.04]
+#
+#    runs-on: ${{ matrix.platform }}
+#    steps:
+#      - uses: actions/checkout@v3
+#      - uses: erlef/setup-beam@v1
+#        with:
+#          otp-version: '25.3'
+#          elixir-version: '1.14.3'
+#      - name: Restore deps and _build
+#        uses: actions/cache@v3
+#        with:
+#          path: |
+#            deps
+#            _build
+#          key: ${{ runner.os }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+#      - name: Restore rust target
+#        uses: actions/cache@v3
+#        with:
+#          path: src-tauri/target
+#          key: ${{ runner.os }}-cargo-${{ hashFiles(format('{0}{1}', github.workspace, '/src-tauri/Cargo.lock')) }}
+#      - run: mix setup
+#      - run: mix assets.deploy
+#      - run: mix release
+#      - name: install Rust stable
+#        uses: dtolnay/rust-toolchain@stable
+#      - name: install dependencies (ubuntu only)
+#        if: matrix.platform == 'ubuntu-20.04'
+#        run: |
+#          sudo apt-get update
+#          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
+#      - uses: tauri-apps/tauri-action@v0.3.1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          releaseId: ${{ needs.create-release.outputs.release_id }}
 
   macos:
     needs: create-release
@@ -83,14 +83,14 @@ jobs:
       - name: Install Homebrew packages
         run: brew install elixir zstd
       - name: Restore deps and _build
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             deps
             _build
           key: ${{ runner.os }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
       - name: Restore rust target
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: src-tauri/target
           key: ${{ runner.os }}-cargo-${{ hashFiles(format('{0}{1}', github.workspace, '/src-tauri/Cargo.lock')) }}
@@ -111,7 +111,7 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-20.04
-    needs: [create-release, build-tauri, macos]
+    needs: [create-release, macos]
 
     steps:
       - name: publish release
