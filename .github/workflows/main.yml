@@ -80,9 +80,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: asdf-vm/actions/install@v2
-        env:
-          KERL_CONFIGURE_OPTIONS: --disable-dynamic-ssl-lib
+      - name: Restore asdf
+        uses: actions/cache@v3
+        with:
+          path: ~/.asdf
+          key: ${{ runner.os }}-asdf-${{ hashFiles(format('{0}{1}', github.workspace, '/.tool-versions')) }}
       - name: Restore deps and _build
         uses: actions/cache@v3
         with:
@@ -93,8 +95,13 @@ jobs:
       - name: Restore rust target
         uses: actions/cache@v3
         with:
-          path: src-tauri/target
+          path: |
+            src-tauri/target/release/deps
+            src-tauri/target/release/build
           key: ${{ runner.os }}-cargo-${{ hashFiles(format('{0}{1}', github.workspace, '/src-tauri/Cargo.lock')) }}
+      - uses: asdf-vm/actions/install@v2
+        env:
+          KERL_CONFIGURE_OPTIONS: --disable-dynamic-ssl-lib
       - run: mix local.hex --force
       - run: mix local.rebar --force
       - run: mix setup
