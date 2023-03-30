@@ -1,6 +1,6 @@
 [package]
 name = "phx_new_desktop"
-version = "0.0.0"
+version = "0.1.0"
 description = "A Tauri App"
 authors = ["you"]
 license = ""
@@ -9,8 +9,11 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[build-dependencies]
-tauri-build = { version = "1.2", features = [] }
+[build-dependencies.tauri-build]
+git = "https://github.com/tauri-apps/tauri"
+branch = "dev"
+package = "tauri-build"
+features = []
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
