@@ -1,6 +1,6 @@
 # phx.new desktop
 
-[Video](https://twitter.com/kevin52069370/status/1641352557842014208)
+[Video Demo](https://twitter.com/kevin52069370/status/1641352557842014208)
 
 To start your Phoenix server:
 
