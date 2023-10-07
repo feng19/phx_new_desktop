@@ -271,7 +271,7 @@ defmodule PhxNewDesktopWeb.GenLive do
         end
       end)
 
-    args = ["phx.new", app, "--verbose" | args]
+    args = ["phx.new", app, "--verbose", "--no-install" | args]
     cmd = Enum.join(["mix" | args], " ")
 
     topic = "t:#{inspect(self())}"
