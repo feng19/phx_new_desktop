@@ -45,7 +45,7 @@
     </div>
   </div>
 
-  <div id="result_parent" :if={@result} class="bg-white bg-opacity-10 absolute inset-0 w-3/4 h-4/5 m-auto rounded shadow-sm">
+  <div id="result_parent" :if={@result} class="bg-white bg-opacity-10 absolute inset-0 w-5/6 h-5/6 m-auto rounded shadow-sm">
     <div id="results" class="h-full p-2 text-sm font-semibold font-mono tracking-tighter overflow-y-auto" phx-update="stream">
       <pre class="select-all" id={id} :for={{id, result} <- @streams.results}><%= {:safe, result} %></pre>
     </div>
@@ -64,7 +64,7 @@
       <h1 class="ml-6 text-brand flex items-center text-sm font-semibold leading-6">
         Phoenix Framework
         <small class="bg-brand/5 text-[0.8125rem] ml-3 rounded-full px-2 font-medium leading-6">
-          v<%= Application.spec(:phoenix, :vsn) %>
+          <%= @phx_version %>
         </small>
       </h1>
     </div>
@@ -77,6 +77,10 @@
     </p>
 
     <div>
+      <p class="text-lg font-semibold leading-8 tracking-wider text-zinc-900">
+        Project Structure
+      </p>
+
       <div class="grid grid-cols-2 gap-6 p-4">
         <button class={["btn", not @umbrella && "btn-checked"]} phx-value-key="umbrella" value="false"
           phx-click={JS.push("set") |> hide("#help-doc")}>
@@ -89,6 +93,26 @@
           <.icon name="hero-server-stack" class="h-8 w-8 block" />
           Umbrella
         </button>
+      </div>
+
+      <div class="-mt-4 p-4 space-y-2">
+        <p class="-ml-4 text-lg font-semibold leading-10 tracking-wider text-zinc-900">
+          Adapter Settings
+        </p>
+
+        <div class="grid grid-cols-2 gap-4">
+          <button class={["btn", @adapter=="cowboy" && "btn-checked"]} phx-value-key="adapter" value="cowboy"
+            phx-click={JS.push("set") |> show("#help-doc")}>
+            <.icon name="hero-puzzle-piece" class="h-7 w-7 block" />
+            Cowboy
+          </button>
+
+          <button class={["btn", @adapter=="bandit" && "btn-checked"]} phx-value-key="adapter" value="bandit"
+            phx-click={JS.push("set") |> show("#help-doc")}>
+            <.icon name="hero-puzzle-piece" class="h-7 w-7 block" />
+            Bandit
+          </button>
+        </div>
       </div>
 
       <div class="-mt-4 p-4 space-y-4">

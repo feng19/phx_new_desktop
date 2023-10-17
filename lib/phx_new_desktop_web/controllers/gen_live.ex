@@ -17,6 +17,7 @@ defmodule PhxNewDesktopWeb.GenLive do
     html: true,
     live: true,
     umbrella: false,
+    adapter: "cowboy",
     verbose: true,
     install: false,
     gettext: true,
@@ -24,11 +25,26 @@ defmodule PhxNewDesktopWeb.GenLive do
     mailer: true,
     can?: false,
     help_doc: "",
-    result: nil
+    result: nil,
+    phx_version: nil
   }
   @help_docs %{
     umbrella:
       "Generate an umbrella project, with one application for your domain, and a second application for the web interface.",
+    adapter:
+      {:safe,
+       """
+       <div class="text-3xl">
+       specify the http adapter. One of:
+       <ul class="text-blue-600 underline">
+         <li><a href="https://github.com/elixir-plug/plug_cowboy" target="_blank">cowboy</a></li>
+         <li><a href="https://github.com/mtrudel/bandit" target="_blank">bandit</a></li>
+       </ul>
+
+       Please check the adapter docs for more information and requirements.
+       Defaults to "cowboy".
+       </div>
+       """},
     app: "The name of the OTP application.",
     module: "The name of the base module in the generated skeleton.",
     ecto: "Generate Ecto files",
@@ -63,11 +79,11 @@ defmodule PhxNewDesktopWeb.GenLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    # check erl
-    # check elixir
-    # check mix
-    # check phx_new
-    socket = assign(socket, @default) |> stream(:results, [], dom_id: &dom_id/1)
+    socket =
+      assign(socket, @default)
+      |> check_env()
+      |> stream(:results, [], dom_id: &dom_id/1)
+
     {:ok, socket}
   end
 
@@ -258,6 +274,7 @@ defmodule PhxNewDesktopWeb.GenLive do
         ["--module", module]
       end
       |> then(&if assigns.umbrella, do: ["--umbrella" | &1], else: &1)
+      |> then(&if match?("bandit", assigns.adapter), do: ["--adapter", "bandit" | &1], else: &1)
       |> then(&if assigns.html and not assigns.live, do: ["--no-live" | &1], else: &1)
       |> then(fn acc ->
         if ecto do
@@ -320,5 +337,29 @@ defmodule PhxNewDesktopWeb.GenLive do
 
   defp dom_id(_) do
     System.unique_integer() |> to_string()
+  end
+
+  defp check_env(socket) do
+    with {_, erl_path} when is_binary(erl_path) <- {:erl, System.find_executable("erl")},
+         {_, elixir_path} when is_binary(elixir_path) <-
+           {:elixir, System.find_executable("elixir")},
+         {_, mix_path} when is_binary(mix_path) <- {:mix, System.find_executable("mix")},
+         {version, 0} <- System.shell("mix phx.new -v", env: exec_env()) do
+      phx_version = String.trim(version) |> String.split() |> List.last()
+      assign(socket, phx_version: phx_version)
+    else
+      {:erl, _} ->
+        push_event(socket, "dialog", %{message: "please make sure you had installed erl"})
+
+      {:elixir, _} ->
+        push_event(socket, "dialog", %{message: "please make sure you had installed elixir"})
+
+      {:mix, _} ->
+        push_event(socket, "dialog", %{message: "please make sure you had installed elixir"})
+
+      error ->
+        Logger.warning(inspect(error))
+        push_event(socket, "dialog", %{message: "please make sure you had installed phx.new"})
+    end
   end
 end

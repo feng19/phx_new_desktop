@@ -2,6 +2,7 @@ const Generate = {
   mounted() {
     let hook = this
     this.el.addEventListener("click", _info => select_dir(hook))
+    this.handleEvent("dialog", show_dialog)
     this.handleEvent("exec_done", alert_result)
   }
 };
@@ -28,6 +29,10 @@ function alert_result({exit_status}) {
   } else {
     alert("Generate failed!")
   }
+}
+
+function show_dialog({message}) {
+  alert(message)
 }
 
 export default Generate;
