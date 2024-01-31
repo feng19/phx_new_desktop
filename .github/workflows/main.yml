@@ -44,8 +44,8 @@ jobs:
       - uses: actions/checkout@v3
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: '25.3'
-          elixir-version: '1.14.3'
+          otp-version: '26.1.1'
+          elixir-version: '1.15.7'
       - name: Restore deps and _build
         uses: actions/cache@v3
         with:
