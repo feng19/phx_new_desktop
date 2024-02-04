@@ -17,7 +17,7 @@ defmodule PhxNewDesktopWeb.GenLive do
     html: true,
     live: true,
     umbrella: false,
-    adapter: "cowboy",
+    adapter: "bandit",
     verbose: true,
     install: false,
     gettext: true,
@@ -42,7 +42,7 @@ defmodule PhxNewDesktopWeb.GenLive do
        </ul>
 
        Please check the adapter docs for more information and requirements.
-       Defaults to "cowboy".
+       Defaults to "bandit".
        </div>
        """},
     app: "The name of the OTP application.",
