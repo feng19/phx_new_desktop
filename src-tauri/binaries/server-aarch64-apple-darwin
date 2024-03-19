@@ -6,7 +6,7 @@ echo "starting..."
 if [ -d dist ]
 then
     # dev
-    if [ -z $TAURI_SKIP_DEVSERVER_CHECK ]
+    if [ -n $TAURI_SKIP_DEVSERVER_CHECK ]
     then
         echo "start server skiped!"
         exit 0 # for use dev server
