@@ -222,9 +222,9 @@
 
         <form phx-change="validate">
           <div class="grid grid-cols-2 gap-6">
-            <.input label="app" type="text" name="app" value={@app} errors={@app_errors}
+            <.input label="app" type="text" name="app" value={@app} autocomplete="off" errors={@app_errors}
               phx-focus={JS.push("help", value: %{key: "app"}) |> show("#help-doc")} />
-            <.input label="module" type="text" name="module" value={@module} errors={@module_errors}
+            <.input label="module" type="text" name="module" value={@module} autocomplete="off" errors={@module_errors}
               phx-focus={JS.push("help", value: %{key: "module"}) |> show("#help-doc")}/>
           </div>
         </form>
