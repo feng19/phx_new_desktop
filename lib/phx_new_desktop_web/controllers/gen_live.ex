@@ -246,7 +246,7 @@ defmodule PhxNewDesktopWeb.GenLive do
     assign(socket, :help_doc, doc)
   end
 
-  defp generate(assigns, dir) do
+  defp make_cmd_args(assigns) do
     %{app: app, app_as_module?: app_as_module?, module: module, ecto: ecto} = assigns
 
     args =
@@ -271,7 +271,7 @@ defmodule PhxNewDesktopWeb.GenLive do
       if app_as_module? do
         args
       else
-        ["--module", module]
+        ["--module", module | args]
       end
       |> then(&if assigns.umbrella, do: ["--umbrella" | &1], else: &1)
       |> then(&if match?("bandit", assigns.adapter), do: ["--adapter", "bandit" | &1], else: &1)
@@ -288,16 +288,20 @@ defmodule PhxNewDesktopWeb.GenLive do
         end
       end)
 
-    args = ["phx.new", app, "--verbose", "--no-install" | args]
+    ["phx.new", app, "--verbose", "--no-install" | args]
+  end
+
+  defp generate(assigns, dir) do
+    args = make_cmd_args(assigns)
     cmd = Enum.join(["mix" | args], " ")
 
     topic = "t:#{inspect(self())}"
     Phoenix.PubSub.subscribe(PhxNewDesktop.PubSub, topic)
-    io = %PhxNewDesktop.TopicStream{topic: topic}
 
     task =
       Task.async(fn ->
         Logger.info("exec cmd: #{cmd}")
+        io = %PhxNewDesktop.TopicStream{topic: topic}
         System.cmd("mix", args, cd: dir, env: exec_env(), into: io)
       end)
 
