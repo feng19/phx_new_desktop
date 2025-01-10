@@ -278,13 +278,13 @@ defmodule PhxNewDesktopWeb.GenLive do
       |> then(&if assigns.html and not assigns.live, do: ["--no-live" | &1], else: &1)
       |> then(fn acc ->
         if ecto do
-          acc
-        else
           if assigns.binary_id do
             ["--database", assigns.database, "--binary-id" | acc]
           else
             ["--database", assigns.database | acc]
           end
+        else
+          acc
         end
       end)
 
