@@ -1,6 +1,6 @@
 [package]
 name = "phx_new_desktop"
-version = "0.1.2"
+version = "0.1.3"
 description = "phx.new app"
 authors = ["feng19"]
 license = "Apache-2.0"
